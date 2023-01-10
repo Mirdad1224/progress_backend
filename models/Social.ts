@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
+import ISocial from "../types/ISocial";
 
-const socialSchema = new mongoose.Schema({
+const socialSchema = new mongoose.Schema<ISocial>({
   username: {
     type: String,
     required: true,
@@ -18,4 +19,4 @@ const socialSchema = new mongoose.Schema({
   },
 });
 
-export default mongoose.model("Social", socialSchema);
+export default mongoose.model<ISocial>("Social", socialSchema);
