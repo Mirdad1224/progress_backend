@@ -1,9 +1,5 @@
-import jwt, { JwtPayload } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
-
-export interface CustomRequest extends Request {
-  user: string | JwtPayload;
-}
 
 const verifyJWT = (req: Request, res: Response, next: NextFunction) => {
   const authHeader =
@@ -20,7 +16,7 @@ const verifyJWT = (req: Request, res: Response, next: NextFunction) => {
       token,
       process.env.ACCESS_TOKEN_SECRET?.toString()!
     ) as { email: string };
-    (req as CustomRequest).user = decoded.email;
+    req.user = decoded.email;
     next();
   } catch (err) {
     return res.status(403).json({ message: "Forbidden" });
