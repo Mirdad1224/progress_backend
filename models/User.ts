@@ -35,6 +35,7 @@ const userSchema = new mongoose.Schema<IUser>(
     },
     phone: { type: String, minlength: 10 },
     addresses: [addressSchema],
+    orders: [{ type: mongoose.Types.ObjectId, ref: "Order" }],
     role: {
       type: String,
       enum: ["user", "admin", "superAdmin"],

@@ -14,6 +14,7 @@ export default interface IUser {
   image?: string;
   phone?: string;
   addresses?: IAddresses[];
+  orders: [Types.ObjectId];
   role: "user" | "admin" | "superAdmin";
   favorates?: [Types.ObjectId];
   basket?: {
