@@ -1,16 +1,19 @@
-import { Response, NextFunction } from "express";
-import { CustomRequest } from "../types/customRequest";
+import { Request, Response, NextFunction } from "express";
 import User from "../models/User";
 import errorGenerate from "../utils/errorGenerate";
 
 const verifyRole = (role: "user" | "admin" | "superAdmin") => {
-  return async (req: CustomRequest, res: Response, next: NextFunction) => {
+  return async (req: Request, res: Response, next: NextFunction) => {
     try {
       const userData = await User.findOne({ email: req.user }).lean().exec();
       if (!userData) {
         errorGenerate("Forbidden", 403);
       }
-      if (userData!.role === role) {
+      if (
+        userData!.role === role ||
+        ((role === "user" || role === "admin") &&
+          userData!.role === "superAdmin")
+      ) {
         next();
       } else {
         errorGenerate("Forbidden", 403);
