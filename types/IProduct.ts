@@ -7,7 +7,7 @@ export interface IGallery {
 export default interface IProduct {
   title: string;
   segment: string;
-  image?: string;
+  image: string;
   gallery?: IGallery[];
   offPrice?: number;
   price: number;
