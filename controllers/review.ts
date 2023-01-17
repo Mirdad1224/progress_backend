@@ -16,7 +16,7 @@ export const getProductsReviews = async (
   const nPerPage = parseInt(req.query.limit || "6");
   try {
     const reviews = await Review.find({ articleId: { $exists: false } })
-      .populate("userId")
+      .populate("userId", "_id email name")
       .populate("productId")
       .sort({ _id: 1 })
       .skip((pageNumber - 1) * nPerPage)
@@ -46,7 +46,7 @@ export const getArticlesReviews = async (
   const nPerPage = parseInt(req.query.limit || "6");
   try {
     const reviews = await Review.find({ productId: { $exists: false } })
-      .populate("userId")
+      .populate("userId", "_id email name")
       .populate("articleId")
       .sort({ _id: 1 })
       .skip((pageNumber - 1) * nPerPage)
@@ -72,15 +72,23 @@ export const getReviewsByProductId = async (
   res: Response,
   next: NextFunction
 ) => {
-  if (!mongoose.Types.ObjectId.isValid(req.params.pid)) {
-    errorGenerate("Invalid ID", 400);
-  }
-
-  const pageNumber = parseInt(req.query.page || "1");
-  const nPerPage = parseInt(req.query.limit || "6");
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.pid)) {
+      errorGenerate("Invalid ID", 400);
+    }
+
+    const pageNumber = parseInt(req.query.page || "1");
+    const nPerPage = parseInt(req.query.limit || "6");
     const productWithReviews = await Product.findById(req.params.pid)
-      .populate("reviews")
+      .populate({
+        path: "reviews",
+        model: "Review",
+        populate: {
+          path: "userId",
+          model: "User",
+          select: "_id email name",
+        },
+      })
       .sort({ _id: 1 })
       .skip((pageNumber - 1) * nPerPage)
       .limit(nPerPage);
@@ -90,7 +98,7 @@ export const getReviewsByProductId = async (
     });
 
     if (!productWithReviews) {
-      errorGenerate("Product has no reviews", 404);
+      errorGenerate("Product not found", 404);
     }
     res.status(200).send({
       data: productWithReviews,
@@ -106,15 +114,23 @@ export const getReviewsByArticleId = async (
   res: Response,
   next: NextFunction
 ) => {
-  if (!mongoose.Types.ObjectId.isValid(req.params.aid)) {
-    errorGenerate("Invalid ID", 400);
-  }
-
-  const pageNumber = parseInt(req.query.page || "1");
-  const nPerPage = parseInt(req.query.limit || "6");
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.aid)) {
+      errorGenerate("Invalid ID", 400);
+    }
+
+    const pageNumber = parseInt(req.query.page || "1");
+    const nPerPage = parseInt(req.query.limit || "6");
     const articleWithReviews = await Article.findById(req.params.aid)
-      .populate("reviews")
+      .populate({
+        path: "reviews",
+        model: "Review",
+        populate: {
+          path: "userId",
+          model: "User",
+          select: "_id email name",
+        },
+      })
       .sort({ _id: 1 })
       .skip((pageNumber - 1) * nPerPage)
       .limit(nPerPage);
@@ -140,20 +156,23 @@ export const addProductReview = async (
   res: Response,
   next: NextFunction
 ) => {
-  if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-    errorGenerate("Invalid ID", 400);
-  }
-  const { rating, description } = req.body;
-
-  if (!rating || !description) {
-    errorGenerate("Rating and description are required.", 400);
-  }
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      errorGenerate("Invalid ID", 400);
+    }
+    const { rating, description } = req.body;
+
+    if (!rating || !description) {
+      errorGenerate("Rating and description are required.", 400);
+    }
     const checkData = await checkReview({ rating, description });
     if (checkData !== true) {
       errorGenerate("Invalid Inputs", 400, checkData);
     }
-    const user = await User.findOne({ email: req.user }).lean().exec();
+    const user = await User.findOne({ email: req.user })
+      .select("-password -refreshToken")
+      .lean()
+      .exec();
     if (!user) {
       errorGenerate("User not found", 404);
     }
@@ -191,19 +210,20 @@ export const deleteProductReview = async (
       errorGenerate("Invalid id", 400);
     }
     const review = await Review.findById(req.params.id)
-      .populate("userId")
+      .populate("userId", "_id email name")
       .populate("productId");
 
-    const user = await User.findOne({ email: req.user }).lean().exec();
+    const user = await User.findOne({ email: req.user })
+      .select("-password -refreshToken")
+      .lean()
+      .exec();
     if (!review || !review.productId) {
       errorGenerate("Review not found", 404);
     }
     if (!user) {
       errorGenerate("Unauthorized", 401);
     }
-
     /* This is checking if the user is the owner of the review. */
-
     if (
       user?.role === "user" &&
       review!.userId._id.toString() !== user._id.toString()
@@ -231,20 +251,23 @@ export const addArticleReview = async (
   res: Response,
   next: NextFunction
 ) => {
-  if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-    errorGenerate("Invalid ID", 400);
-  }
-  const { rating, description } = req.body;
-
-  if (!rating || !description) {
-    errorGenerate("Rating and description are required.", 400);
-  }
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      errorGenerate("Invalid ID", 400);
+    }
+    const { rating, description } = req.body;
+
+    if (!rating || !description) {
+      errorGenerate("Rating and description are required.", 400);
+    }
     const checkData = await checkReview({ rating, description });
     if (checkData !== true) {
       errorGenerate("Invalid Inputs", 400, checkData);
     }
-    const user = await User.findOne({ email: req.user }).lean().exec();
+    const user = await User.findOne({ email: req.user })
+      .select("-password -refreshToken")
+      .lean()
+      .exec();
     if (!user) {
       errorGenerate("User not found", 404);
     }
@@ -285,7 +308,10 @@ export const deleteArticleReview = async (
       .populate("userId")
       .populate("articleId");
 
-    const user = await User.findOne({ email: req.user }).lean().exec();
+    const user = await User.findOne({ email: req.user })
+      .select("-password -refreshToken")
+      .lean()
+      .exec();
     if (!review || !review.articleId) {
       errorGenerate("Review not found", 404);
     }
