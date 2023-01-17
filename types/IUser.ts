@@ -7,6 +7,11 @@ export interface IAddresses {
   postalCode: string;
 }
 
+interface CartItems {
+  productId: Types.ObjectId | string;
+  cartQuantity: number;
+}
+
 export default interface IUser {
   email: string;
   password?: string;
@@ -20,7 +25,7 @@ export default interface IUser {
   basket?: {
     totalAmount: number;
     totalQTY: number;
-    cartItems: [productId: Types.ObjectId, cartQuantity: number];
+    cartItems: CartItems[] | [];
   };
   refreshToken?: string;
 }
