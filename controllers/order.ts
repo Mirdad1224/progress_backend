@@ -16,7 +16,7 @@ export const getOrders = async (
   try {
     const orders = await Order.find()
       .populate("productId")
-      .populate("userId")
+      .populate("userId", "_id email name")
       .sort({ _id: 1 })
       .skip((pageNumber - 1) * nPerPage)
       .limit(nPerPage);
@@ -38,15 +38,16 @@ export const getOrdersByUserId = async (
   res: Response,
   next: NextFunction
 ) => {
-  if (!mongoose.Types.ObjectId.isValid(req.params.uid)) {
-    errorGenerate("Invalid ID", 400);
-  }
-
-  const pageNumber = parseInt(req.query.page || "1");
-  const nPerPage = parseInt(req.query.limit || "6");
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.uid)) {
+      errorGenerate("Invalid ID", 400);
+    }
+
+    const pageNumber = parseInt(req.query.page || "1");
+    const nPerPage = parseInt(req.query.limit || "6");
     const userWithOrders = await User.findById(req.params.uid)
       .populate({ path: "orders", populate: { path: "productId" } })
+      .select("-password -refreshToken")
       .sort({ _id: 1 })
       .skip((pageNumber - 1) * nPerPage)
       .limit(nPerPage);
@@ -77,7 +78,9 @@ export const addOrder = async (
     if (checkData !== true) {
       errorGenerate("Invalid Inputs", 400, checkData);
     }
-    const user = await User.findOne({ email: req.user }).exec();
+    const user = await User.findOne({ email: req.user })
+      .select("-password -refreshToken")
+      .exec();
 
     if (!user) {
       errorGenerate("User not found", 404);
@@ -107,12 +110,14 @@ export const deleteOrder = async (
   res: Response,
   next: NextFunction
 ) => {
-  if (!mongoose.Types.ObjectId.isValid(req.params.oid)) {
-    errorGenerate("Invalid id", 400);
-  }
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.oid)) {
+      errorGenerate("Invalid id", 400);
+    }
     const order = await Order.findById(req.params.oid);
-    const user = await User.findOne({ email: req.user });
+    const user = await User.findOne({ email: req.user })
+      .select("-password -refreshToken")
+      .exec();
 
     if (!order) {
       errorGenerate("Order not found", 404);
