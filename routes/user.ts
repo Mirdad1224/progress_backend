@@ -24,8 +24,6 @@ router.get("/", verifyRole("admin") as any, getUsers);
 // GET ORDERS BY USER ID
 router.get("/my-orders/:uid", getOrdersByUserId);
 
-// VALIDATOR FOR ADD ORDER
-
 // ADD ORDER
 router.post("/order", addOrder);
 
