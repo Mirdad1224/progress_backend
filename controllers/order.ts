@@ -25,9 +25,17 @@ export const getOrders = async (
     if (!orders) {
       errorGenerate("Orders not found", 404);
     }
-    res
-      .status(200)
-      .json({ message: "Orders found", data: orders, total: totalOrders });
+    res.status(200).json({
+      message: "Orders found",
+      data: orders,
+      currentPage: pageNumber,
+      nextPage: pageNumber + 1,
+      previoousPage: pageNumber - 1,
+      hasNextPage: nPerPage * pageNumber < totalOrders,
+      hasPreviousPage: pageNumber > 1,
+      lastPage: Math.ceil(totalOrders / nPerPage),
+      total: totalOrders,
+    });
   } catch (err) {
     next(err);
   }
@@ -52,12 +60,23 @@ export const getOrdersByUserId = async (
       .skip((pageNumber - 1) * nPerPage)
       .limit(nPerPage);
 
+    const totalOrders = await Order.countDocuments({ userId: req.params.uid });
+
     if (!userWithOrders) {
       errorGenerate("User has no orders", 404);
     }
     res
       .status(200)
-      .json({ message: "User orders found", data: userWithOrders!.orders });
+      .json({
+        message: "User orders found",
+        data: userWithOrders!.orders,
+        currentPage: pageNumber,
+        nextPage: pageNumber + 1,
+        previoousPage: pageNumber - 1,
+        hasNextPage: nPerPage * pageNumber < totalOrders,
+        hasPreviousPage: pageNumber > 1,
+        lastPage: Math.ceil(totalOrders / nPerPage),
+      });
   } catch (err) {
     next(err);
   }

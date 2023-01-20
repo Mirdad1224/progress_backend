@@ -7,9 +7,6 @@ import checkCredential from "../validators/register";
 import checkSocial from "../validators/social";
 import errorGenerate from "../utils/errorGenerate";
 
-// @desc Register
-// @route POST /auth/register
-// @access Public
 export const register = async (
   req: Request,
   res: Response,
@@ -47,9 +44,6 @@ export const register = async (
   }
 };
 
-// @desc Login
-// @route POST /auth/login
-// @access Public
 export const login = async (
   req: Request,
   res: Response,
@@ -110,9 +104,6 @@ export const login = async (
   }
 };
 
-// @desc Refresh
-// @route GET /auth/refresh
-// @access Public - because access token has expired
 export const refresh = async (
   req: Request,
   res: Response,
@@ -150,9 +141,6 @@ export const refresh = async (
   }
 };
 
-// @desc Logout
-// @route POST /auth/logout
-// @access Public - just to clear cookie if exists
 export const logout = async (
   req: Request,
   res: Response,
@@ -184,9 +172,6 @@ export const logout = async (
   }
 };
 
-// @desc social login
-// @route POST /auth/social
-// @access Public
 export const social = async (
   req: Request,
   res: Response,
