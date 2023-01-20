@@ -165,6 +165,12 @@ export const getProducts = async (
     res.status(200).json({
       message: "Products found successfully",
       data: products,
+      currentPage: pageNumber,
+      nextPage: pageNumber + 1,
+      previoousPage: pageNumber - 1,
+      hasNextPage: nPerPage * pageNumber < totalProducts,
+      hasPreviousPage: pageNumber > 1,
+      lastPage: Math.ceil(totalProducts / nPerPage),
       total: totalProducts,
     });
   } catch (err) {

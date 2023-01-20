@@ -30,6 +30,12 @@ export const getProductsReviews = async (
     }
     res.status(200).send({
       data: reviews,
+      currentPage: pageNumber,
+      nextPage: pageNumber + 1,
+      previoousPage: pageNumber - 1,
+      hasNextPage: nPerPage * pageNumber < totalReviews,
+      hasPreviousPage: pageNumber > 1,
+      lastPage: Math.ceil(totalReviews / nPerPage),
       total: totalReviews,
     });
   } catch (err) {
@@ -60,6 +66,12 @@ export const getArticlesReviews = async (
     }
     res.status(200).send({
       data: reviews,
+      currentPage: pageNumber,
+      nextPage: pageNumber + 1,
+      previoousPage: pageNumber - 1,
+      hasNextPage: nPerPage * pageNumber < totalReviews,
+      hasPreviousPage: pageNumber > 1,
+      lastPage: Math.ceil(totalReviews / nPerPage),
       total: totalReviews,
     });
   } catch (err) {
@@ -102,6 +114,12 @@ export const getReviewsByProductId = async (
     }
     res.status(200).send({
       data: productWithReviews,
+      currentPage: pageNumber,
+      nextPage: pageNumber + 1,
+      previoousPage: pageNumber - 1,
+      hasNextPage: nPerPage * pageNumber < totalReviews,
+      hasPreviousPage: pageNumber > 1,
+      lastPage: Math.ceil(totalReviews / nPerPage),
       total: totalReviews,
     });
   } catch (err) {
@@ -144,6 +162,12 @@ export const getReviewsByArticleId = async (
     }
     res.status(200).send({
       data: articleWithReviews,
+      currentPage: pageNumber,
+      nextPage: pageNumber + 1,
+      previoousPage: pageNumber - 1,
+      hasNextPage: nPerPage * pageNumber < totalReviews,
+      hasPreviousPage: pageNumber > 1,
+      lastPage: Math.ceil(totalReviews / nPerPage),
       total: totalReviews,
     });
   } catch (err) {
@@ -318,7 +342,6 @@ export const deleteArticleReview = async (
     if (!user) {
       errorGenerate("Unauthorized", 401);
     }
-
     /* This is checking if the user is the owner of the review. */
     if (
       user?.role === "user" &&

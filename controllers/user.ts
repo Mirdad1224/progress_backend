@@ -103,7 +103,7 @@ export const getUsers = async (
   next: NextFunction
 ) => {
   const pageNumber = parseInt(req.query.page || "1");
-  const nPerPage = parseInt(req.query.limit || "20");
+  const nPerPage = parseInt(req.query.limit || "10");
   try {
     const users = await User.find({ role: "user" }, "-password -refreshToken")
       .sort({ _id: 1 })
@@ -114,6 +114,12 @@ export const getUsers = async (
     res.status(200).json({
       message: "Users found successfully",
       data: users,
+      currentPage: pageNumber,
+      nextPage: pageNumber + 1,
+      previoousPage: pageNumber - 1,
+      hasNextPage: nPerPage * pageNumber < totalUsers,
+      hasPreviousPage: pageNumber > 1,
+      lastPage: Math.ceil(totalUsers / nPerPage),
       total: totalUsers,
     });
   } catch (err) {
