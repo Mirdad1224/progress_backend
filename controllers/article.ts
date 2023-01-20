@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import { Request, Response, NextFunction } from "express";
 import errorGenerate from "../utils/errorGenerate";
 import Article from "../models/Article";
-import checkArticle from '../validators/article'
+import checkArticle from "../validators/article";
 import IAddArticle from "../types/IAddArticle";
 
 export const createArticle = async (
@@ -11,7 +11,7 @@ export const createArticle = async (
   next: NextFunction
 ) => {
   try {
-    const checkData = await checkArticle({...req.body});
+    const checkData = await checkArticle({ ...req.body });
     if (checkData !== true) {
       errorGenerate("Invalid Inputs", 400, checkData);
     }
@@ -35,7 +35,7 @@ export const updateArticle = async (
     errorGenerate("Invalid Id", 400);
   }
   try {
-    const checkData = await checkArticle({...req.body});
+    const checkData = await checkArticle({ ...req.body });
     if (checkData !== true) {
       errorGenerate("Invalid Inputs", 400, checkData);
     }
@@ -123,13 +123,17 @@ export const getArticles = async (
       .limit(nPerPage);
     const totalArticles = await Article.countDocuments(filters);
 
-    res
-      .status(200)
-      .json({
-        message: "Articles found successfully",
-        data: articles,
-        total: totalArticles,
-      });
+    res.status(200).json({
+      message: "Articles found successfully",
+      data: articles,
+      currentPage: pageNumber,
+      nextPage: pageNumber + 1,
+      previoousPage: pageNumber - 1,
+      hasNextPage: nPerPage * pageNumber < totalArticles,
+      hasPreviousPage: pageNumber > 1,
+      lastPage: Math.ceil(totalArticles / nPerPage),
+      total: totalArticles,
+    });
   } catch (err) {
     next(err);
   }

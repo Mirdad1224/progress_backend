@@ -5,7 +5,6 @@ import User from "../models/User";
 import IUpadateUser from "../types/IUpdateUser";
 import checkUserData from "../validators/userData";
 
-
 export const createAdmin = async (
   req: Request<{}, {}, { email: string }, {}>,
   res: Response,
@@ -37,7 +36,6 @@ export const createAdmin = async (
   }
 };
 
-/* It updates an admin */
 export const updateAdmin = async (
   req: Request<{ id: string }, {}, IUpadateUser, {}>,
   res: Response,
@@ -67,8 +65,6 @@ export const updateAdmin = async (
       { new: true }
     ).select("-password -refreshToken");
 
-    // await updatedAdmin.save();
-
     res.status(200).json({
       message: "Admin updated successfully",
       data: updatedAdmin,
@@ -78,7 +74,6 @@ export const updateAdmin = async (
   }
 };
 
-/* It deletes an admin from the database */
 export const deleteAdmin = async (
   req: Request<{ id: string }, {}, {}, {}>,
   res: Response,
@@ -92,8 +87,6 @@ export const deleteAdmin = async (
       .select("-password -refreshToken")
       .exec();
 
-    /* Checking if the admin exists or not. If it does not exist, then it is returning a response to the
-client. */
     if (!admin || admin.role !== "admin") {
       errorGenerate("Admin not found!", 404);
     }
@@ -108,10 +101,6 @@ client. */
   }
 };
 
-/**
- * It gets an admin by id
- * @returns The admin object is being returned.
- */
 export const getAdmin = async (
   req: Request<{ id: string }, {}, {}, {}>,
   res: Response,
@@ -138,25 +127,31 @@ export const getAdmin = async (
   }
 };
 
-/**
- * It gets all the admins from the database and returns them to the user
- * @returns An array of admins and the total number of admins.
- */
 export const getAdmins = async (
-  req: Request,
+  req: Request<{}, {}, {}, {page?: string, limit?: string;}>,
   res: Response,
   next: NextFunction
 ) => {
+  const pageNumber = parseInt(req.query.page || "1");
+  const nPerPage = parseInt(req.query.limit || "10");
   try {
     const admins = await User.find(
       { role: "admin" },
       "-password -refreshToken"
-    );
+    ).skip((pageNumber - 1) * nPerPage)
+    .limit(nPerPage);
+
     const totalAdmins = await User.countDocuments({ role: "admin" });
 
     res.status(200).json({
       message: "Admins found successfully",
       data: admins,
+      currentPage: pageNumber,
+      nextPage: pageNumber + 1,
+      previoousPage: pageNumber - 1,
+      hasNextPage: nPerPage * pageNumber < totalAdmins,
+      hasPreviousPage: pageNumber > 1,
+      lastPage: Math.ceil(totalAdmins / nPerPage),
       total: totalAdmins,
     });
   } catch (err) {
